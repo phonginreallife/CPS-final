@@ -5,22 +5,38 @@ import json
 import time
 import sys
 
-broker_address = "localhost"
+
+broker_address = "broker.emqx.io"
 broker_port = 1883
+username = "emqx"
+password = "public"
 
 # Define the topic
-topic = "sensor/data"
+topic = "sensor_data"
 temp = '0'
 hum = '0'
 output_value = 1
+message = []
+words = "set temperature 16 and humidity 70"
+def extract_numbers(text):
+    numbers = []
+    words = text.split()  # Split the message string into words
+    for word in words:
+        try:
+            number = float(word)  # Try to convert each word to a float number
+            numbers.append(number)
+        except ValueError:
+            pass  # Ignore words that cannot be converted to numbers
+    return numbers
 # Define the callback function for handling incoming messages
 def on_message(client, userdata, msg):
     global sensor_data
     global output_value
+    global message 
+    message = extract_numbers(words)
     payload = msg.payload.decode()
     # Split the payload into temperature and humidity values
     sensor_data = json.loads(payload)
-    message = [20,55]
     if (sensor_data['temp'] != message[0] or sensor_data['hum'] != message[1]):
             if (sensor_data['temp'] != message[0] and sensor_data['hum'] != message[1]):
                 output_value = dfi.process_text_input(sensor_data)
@@ -33,7 +49,8 @@ def on_message(client, userdata, msg):
 client = mqtt.Client()
 client.on_message = on_message
 
-
+# Set username and password
+client.username_pw_set(username, password)
 # Connect to the broker and subscribe to the topic
 client.connect(broker_address, broker_port)
 client.subscribe(topic)
@@ -45,22 +62,3 @@ client.loop_start()
 while True:
     if  output_value == 0:   
          sys.exit(0)
-# message = [20,55]
-
-# print(sensor_data)
-# while (sensor_data['temp'] != message[0] and sensor_data['hum'] != message[1]):
-#         output_value = dfi.process_text_input(sensor_data)
-# print('Fan Speed:', output_value)
-# def recognize():
-#     # if request.method == 'POST':
-#     #     data = request.get_json()
-#     #     # Process POST request and return response
-#     #     message = data.get('message', '')
-#     #     message = message.split()
-#     #     output_value = dfi.process_text_input(message)
-#     message = [20,55]
-#     act_message = mqtt.on_message()
-#     while (act_message['temp'] != message[0] and act_message['hum'] != message[1]):
-#         output_value = dfi.process_text_input(message)
-#     return output_value
-
