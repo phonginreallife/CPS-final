@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-
+from return_value import on_message
 
 app = Flask(__name__)
 CORS(app)
@@ -15,7 +15,7 @@ def index():
                         'Access-Control-Allow-Origin': '*',
                         'Access-Control-Allow-Methods': 'OPTIONS,POST,GET'
                     },
-                    'body': None
+                    'body': on_message()
                 } # Handle POST request with the recognize() function
 if __name__ == '__main__':
     app.run(debug=True)
